@@ -37,6 +37,7 @@ module SendNsca
     attr_accessor  :service
     attr_accessor  :return_code
     attr_accessor  :status
+    attr_accessor  :timeout
 
     # for sending to nsca
     attr_accessor  :crc
@@ -56,11 +57,18 @@ module SendNsca
       @status = args[:status]
       @connected = false
 
+      # Timeout defaults to 1 second
+      if args.has_key? :timeout
+        @timeout = args[:timeout]
+      else
+        @timeout = 1
+      end
+
     end
 
     def connect_and_get_keys
       begin
-        timeout(1) do #the server has one second to answer
+        timeout(@timeout) do # Set timeout for server to respond
           @tcp_client = TCPSocket.open(@nscahost, @port)
           @connected = true
           @xor_key_and_timestamp = @tcp_client.recv(132)
